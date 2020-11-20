@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<App id="ZYSoft.ZKMT" name="MainPage" appType="Production">
+  <Web>
+    <Extension Point_id="Ufida.T.EAP.Web.Page.Load">
+      <View id="ZKMTMainPage.aspx"
+            path="App/ZYSoft/ZYSoft.ZKMT/ZKMTMainPage.aspx"
+            class="Chanjet.ZYSoft.ZKMT.UIP.ZKMTPage">
+      </View>
+      <View id="ZKMTCKPage.aspx"
+           path="App/ZYSoft/ZYSoft.ZKMT/ZKMTCKPage.aspx"
+           class="Chanjet.ZYSoft.ZKMT.UIP.ZKMTPage">
+      </View>
+      <View id="ZKMTGDPage.aspx"
+           path="App/ZYSoft/ZYSoft.ZKMT/ZKMTCGDPage.aspx"
+           class="Chanjet.ZYSoft.ZKMT.UIP.ZKMTPage">
+      </View>
+    </Extension>
+  </Web>
+</App>
