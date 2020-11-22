@@ -1,2 +1,2 @@
-# ZYSoft_TPlus_P20190718
-P20190718
+# ZYSoft_TPlus_ZKMT
+中科摩通 T+
