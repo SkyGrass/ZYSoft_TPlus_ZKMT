@@ -172,7 +172,9 @@
                         FInvCode: m.FInvCode,
                         FProjectCode: m.FProjectCode,
                         FQuantity: m.FQuantity,
-                        FRequireDate: m.FRequireDate
+                        FRequireDate: m.FRequireDate,
+                        FRemark: m.FRemark,
+                        FWebsiteLink: m.FWebsiteLink
                     }
                 });
 

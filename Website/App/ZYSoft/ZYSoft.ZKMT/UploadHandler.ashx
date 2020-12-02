@@ -26,6 +26,8 @@ public class UploadHandler : IHttpHandler
         public string FRequireDate { get; set; }
         public decimal FCurQuantity { get; set; }
         public decimal FQuantity { get; set; }
+        public string FRemark { get; set; }
+        public string FWebsiteLink { get; set; }
         public int FErrorCount { get; set; }
         public bool FIsValid { get; set; }
         public string FErrorMsg { get; set; }
@@ -519,6 +521,8 @@ public class UploadHandler : IHttpHandler
                             qgd.FRequireDate = SafeString(dr[5], "");
                             qgd.FCurQuantity = 0;
                             qgd.FQuantity = SafeDecimal(dr[4], 0);
+                            qgd.FRemark = SafeString(dr[6], "");
+                            qgd.FWebsiteLink = SafeString(dr[7], "");
                             qgd.FIsValid = false;
                             qgd.FErrorMsg = "尚未检查!";
                             list.Add(qgd);

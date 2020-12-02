@@ -90,6 +90,20 @@
     editor: true, validator: ["min:0", "numeric"]
 },
 {
+    title: "网址链接",
+    field: "FWebsiteLink",
+    hozAlign: "center",
+    headerSort: false,
+    width: 250
+},
+{
+    title: "备注",
+    field: "FRemark",
+    hozAlign: "center",
+    headerSort: false,
+    width: 250,
+},
+{
     title: "检查结果",
     field: "FIsValid",
     hozAlign: "center",

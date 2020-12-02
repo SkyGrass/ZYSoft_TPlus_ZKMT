@@ -96,7 +96,8 @@
                                         </el-option>
                                         </el-select>
                                     </el-form-item> 
-                                </el-col>   <el-col :span="4"> 
+                                </el-col>  
+                                 <el-col :span="4"> 
                                       <el-checkbox v-model="noZero">不显示0库存</el-checkbox>
                                     </el-form-item> 
                                 </el-col>  
@@ -135,7 +136,15 @@
                                 </el-col>     
                              </el-row>
                              <el-row :gutter="16"> 
-                                 <el-col :span="8">
+                                  <el-col :span="4">
+                                     <el-form-item label="存货">
+                                     <el-input
+                                      :rows="1"
+                                      placeholder="请输入存货编码、名称、规格"
+                                      v-model="keyword">
+                                    </el-input>
+                                </el-col>
+                                 <el-col :span="4">
                                      <el-form-item label="备注">
                                      <el-input
                                       type="textarea"

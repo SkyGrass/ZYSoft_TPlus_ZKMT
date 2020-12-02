@@ -73,6 +73,14 @@ public class ZKMTHandler : IHttpHandler
         /// 
         /// </summary>
         public string FRequireDate { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string FRemark { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string FWebsiteLink { get; set; }
     }
 
     public class CkPostForm
@@ -219,7 +227,8 @@ public class ZKMTHandler : IHttpHandler
                     string idProject = context.Request.Form["idProject"] ?? "-1";
                     string idStock = context.Request.Form["idStock"] ?? "-1";
                     bool noZero = bool.Parse(context.Request.Form["noZero"]);
-                    result = GetProjectDetail(idProject, idStock, noZero);
+                    string keyword = context.Request.Form["keyword"] ?? "";
+                    result = GetProjectDetail(idProject, idStock, noZero, keyword);
                     break;
                 case "saveqgd":
                     string formData = context.Request.Form["formData"] ?? "";
@@ -431,18 +440,24 @@ public class ZKMTHandler : IHttpHandler
     /// 库存
     /// </summary>
     /// <returns></returns>
-    public string GetProjectDetail(string idProject, string idStock, bool noZero = false)
+    public string GetProjectDetail(string idProject, string idStock, bool noZero = false, string keyword = "")
     {
         var list = new List<Result>();
         try
         {
+            string sqlWhere = "";
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                sqlWhere = string.Format(@" and (T3.code like '%{0}%' or T3.name like '%{0}%' or T3.specification like '%{0}%')", keyword);
+            }
+
             string sql = string.Format(@"select t2.idproject, t1.id FID,T2.id FEntryID,t1.code FBillNo,t1.voucherdate FDate,T3.code FInvNumber,t3.name FInvName,t3.specification FInvStd,T4.name FUnit,       
                     CONVERT(FLOAT,t2.quantity) FQty,CONVERT(FLOAT,ISNULL(T2.pubuserdefdecm1,0)) FOutQty,CONVERT(FLOAT,t2.quantity - ISNULL(T2.pubuserdefdecm1,0))  FUnOutQty,       
                     isnull((SELECT CONVERT(FLOAT,SUM(T5.CanuseBaseQuantity)) FROM ST_CurrentStock T5 WHERE T5.idinventory=T2.idinventory and t5.idwarehouse='{1}'),0) FStockQty       
                     from Pu_PurchaseRequisition t1 join Pu_PurchaseRequisition_b t2 on t1.id=t2.idPurchaseRequisitionDTO       
                     LEFT JOIN AA_Inventory T3 ON T2.idinventory=T3.id       
                     LEFT JOIN AA_Unit T4 ON T3.idunit=T4.ID       
-                    where t2.quantity - ISNULL(T2.pubuserdefdecm1,0)  > 0 AND T2.idproject='{0}'", idProject, idStock);
+                    where t2.quantity - ISNULL(T2.pubuserdefdecm1,0)  > 0 AND T2.idproject='{0}' {2}", idProject, idStock, sqlWhere);
 
             if (noZero)
             {
@@ -452,7 +467,7 @@ public class ZKMTHandler : IHttpHandler
                     from Pu_PurchaseRequisition t1 join Pu_PurchaseRequisition_b t2 on t1.id=t2.idPurchaseRequisitionDTO       
                     LEFT JOIN AA_Inventory T3 ON T2.idinventory=T3.id       
                     LEFT JOIN AA_Unit T4 ON T3.idunit=T4.ID       
-                    where t2.quantity - ISNULL(T2.pubuserdefdecm1,0)  > 0 AND T2.idproject='{0}') as t where t.FStockQty >0 ", idProject, idStock);
+                    where t2.quantity - ISNULL(T2.pubuserdefdecm1,0)  > 0 AND T2.idproject='{0}' {2}) as t where t.FStockQty >0 ", idProject, idStock, sqlWhere);
             }
             DataTable dt = ZYSoft.DB.BLL.Common.ExecuteDataTable(sql);
             return JsonConvert.SerializeObject(new

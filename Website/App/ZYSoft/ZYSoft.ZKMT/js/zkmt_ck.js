@@ -17,6 +17,7 @@
             idStock: -1,
             noZero: false,
             maxlength: 0,
+            keyword: "",
             form: {
                 FProjectCode: "",
                 FUserCode: loginUserCode,
@@ -164,7 +165,7 @@
                 type: "POST",
                 url: "zkmthandler.ashx",
                 async: true,
-                data: { SelectApi: "getprojectdetail", idProject: this.idProject, idStock: this.idStock, noZero: this.noZero },
+                data: { SelectApi: "getprojectdetail", idProject: this.idProject, idStock: this.idStock, noZero: this.noZero, keyword: this.keyword },
                 dataType: "json",
                 success: function (result) {
                     if (result.status == "success") {
@@ -186,7 +187,7 @@
         beforeSave() {
             var that = this;
             var result = false;
-            var array = this.grid.getSelectedData(); 
+            var array = this.grid.getSelectedData();
             if (this.form.FProjectCode == "") {
                 result = true;
                 this.$message({

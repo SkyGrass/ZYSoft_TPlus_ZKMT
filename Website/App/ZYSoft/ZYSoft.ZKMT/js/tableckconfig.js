@@ -47,8 +47,15 @@
 	    width: 150,
 	},
 	{
+	    title: "存货规格",
+	    field: "FInvStd",
+	    hozAlign: "center",
+	    headerSort: false,
+	    width: 150,
+	},
+	{
 	    title: "计量单位",
-	    field: "FUnitName",
+	    field: "FUnit",
 	    hozAlign: "center",
 	    headerSort: false,
 	    width: 80
