@@ -75,7 +75,7 @@
                             <el-row :gutter="16">
                                 <el-col :span="4">
                                     <el-form-item label="项目">
-                                     <el-select v-model="form.FProjectCode" placeholder="请选择项目" @change="handleChangProject">
+                                     <el-select v-model="form.FProjectCode" placeholder="请选择项目" filterable @change="handleChangProject">
                                         <el-option
                                             v-for="item in project"
                                             :key="item.code"
