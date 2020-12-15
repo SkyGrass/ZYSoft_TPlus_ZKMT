@@ -18,6 +18,7 @@
             noZero: false,
             maxlength: 0,
             keyword: "",
+            keyword_project: "",
             form: {
                 FProjectCode: "",
                 FUserCode: loginUserCode,
@@ -165,7 +166,7 @@
                 type: "POST",
                 url: "zkmthandler.ashx",
                 async: true,
-                data: { SelectApi: "getprojectdetail", idProject: this.idProject, idStock: this.idStock, noZero: this.noZero, keyword: this.keyword },
+                data: { SelectApi: "getprojectdetail", idProject: this.idProject, idStock: this.idStock, noZero: this.noZero, keyword: this.keyword, keyword_project: this.keyword_project },
                 dataType: "json",
                 success: function (result) {
                     if (result.status == "success") {

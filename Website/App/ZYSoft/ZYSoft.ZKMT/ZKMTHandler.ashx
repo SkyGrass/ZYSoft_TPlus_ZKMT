@@ -228,7 +228,8 @@ public class ZKMTHandler : IHttpHandler
                     string idStock = context.Request.Form["idStock"] ?? "-1";
                     bool noZero = bool.Parse(context.Request.Form["noZero"]);
                     string keyword = context.Request.Form["keyword"] ?? "";
-                    result = GetProjectDetail(idProject, idStock, noZero, keyword);
+                    string keyword_project = context.Request.Form["keyword_project"] ?? "";
+                    result = GetProjectDetail(idProject, idStock, noZero, keyword, keyword_project);
                     break;
                 case "saveqgd":
                     string formData = context.Request.Form["formData"] ?? "";
@@ -440,7 +441,7 @@ public class ZKMTHandler : IHttpHandler
     /// 库存
     /// </summary>
     /// <returns></returns>
-    public string GetProjectDetail(string idProject, string idStock, bool noZero = false, string keyword = "")
+    public string GetProjectDetail(string idProject, string idStock, bool noZero = false, string keyword = "", string keyword_project = "")
     {
         var list = new List<Result>();
         try
@@ -448,7 +449,11 @@ public class ZKMTHandler : IHttpHandler
             string sqlWhere = "";
             if (!string.IsNullOrEmpty(keyword))
             {
-                sqlWhere = string.Format(@" and (T3.code like '%{0}%' or T3.name like '%{0}%' or T3.specification like '%{0}%')", keyword);
+                sqlWhere += string.Format(@" and (T3.code like '%{0}%' or T3.name like '%{0}%' or T3.specification like '%{0}%')", keyword);
+            }
+            if (!string.IsNullOrEmpty(keyword_project))
+            {
+                sqlWhere += string.Format(@" and t2.pubuserdefnvc6 like '%{0}%'", keyword_project);
             }
 
             string sql = string.Format(@"select t2.idproject, t1.id FID,T2.id FEntryID,t1.code FBillNo,t1.voucherdate FDate,T3.code FInvNumber,t3.name FInvName,t3.specification FInvStd,T4.name FUnit,       

@@ -101,6 +101,14 @@
                                       <el-checkbox v-model="noZero">不显示0库存</el-checkbox>
                                     </el-form-item> 
                                 </el-col>  
+                                   <el-col :span="4">
+                                     <el-form-item label="项目机构">
+                                     <el-input
+                                      :rows="1"
+                                      placeholder="请输入项目机构名称"
+                                      v-model="keyword_project">
+                                    </el-input>
+                                </el-col>
                             </el-row> 
                                <el-row :gutter="16">
                                   <el-col :span="4">
