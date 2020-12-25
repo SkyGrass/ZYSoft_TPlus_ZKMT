@@ -10,9 +10,13 @@
            path="App/ZYSoft/ZYSoft.ZKMT/ZKMTCKPage.aspx"
            class="Chanjet.ZYSoft.ZKMT.UIP.ZKMTPage">
       </View>
-      <View id="ZKMTGDPage.aspx"
+      <View id="ZKMTCGDPage.aspx"
            path="App/ZYSoft/ZYSoft.ZKMT/ZKMTCGDPage.aspx"
            class="Chanjet.ZYSoft.ZKMT.UIP.ZKMTPage">
+      </View>
+      <View id="ZKMTCGDDPage.aspx"
+         path="App/ZYSoft/ZYSoft.ZKMT/ZKMTCGDDPage.aspx"
+         class="Chanjet.ZYSoft.ZKMT.UIP.ZKMTPage">
       </View>
     </Extension>
   </Web>
