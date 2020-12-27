@@ -3,6 +3,7 @@
 using System;
 using System.Web;
 using System.Data;
+using System.Linq;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Xml;
@@ -27,11 +28,21 @@ public class ZKMTCGDDHandler : IHttpHandler
                     break;
                 case "getprojectdetail":
                     string idProject = context.Request.Form["idProject"] ?? "-1";
-                    string idStock = context.Request.Form["idStock"] ?? "-1";
-                    bool noZero = bool.Parse(context.Request.Form["noZero"]);
+                    string poflag = (context.Request.Form["poflag"] ?? "1").Equals("1") ? "是" : "否";
                     keyword = context.Request.Form["keyword"] ?? "";
                     string keyword_project = context.Request.Form["keyword_project"] ?? "";
-                    result = GetProjectDetail(idProject, idStock, noZero, keyword, keyword_project);
+                    result = GetProjectDetail(idProject, poflag, keyword, keyword_project);
+                    break;
+                case "unpomark":
+                    string ids = context.Request.Form["ids"] ?? string.Empty;
+                    string flag = (context.Request.Form["flag"] ?? "0").Equals("0") ? "否" : "是"; //不采购更新为是
+                    result = UnPOMark(ids.Split(','), flag);
+                    break;
+                case "savepo":
+                    string formData = context.Request.Form["formData"] ?? "";
+                    addLogErr("saveck", formData);
+                    methodName = LoadXML("MethodPO");
+                    result = SaveBill(JsonConvert.DeserializeObject<PucherOrder>(formData), methodName);
                     break;
                 default: break;
             }
@@ -77,44 +88,37 @@ public class ZKMTCGDDHandler : IHttpHandler
     /// 库存
     /// </summary>
     /// <returns></returns>
-    public string GetProjectDetail(string idProject, string idStock, bool noZero = false, string keyword = "", string keyword_project = "")
+    public string GetProjectDetail(string idProject, string poflag = "否", string keyword = "", string keyword_project = "")
     {
         var list = new List<Result>();
         try
         {
             string sqlWhere = "";
+            if (!string.IsNullOrEmpty(idProject))
+            {
+                sqlWhere += string.Format(@"  t2.idproject=''{0}'' ", idProject);
+            }
             if (!string.IsNullOrEmpty(keyword))
             {
-                sqlWhere += string.Format(@" and (T3.code like '%{0}%' or T3.name like '%{0}%' or T3.specification like '%{0}%')", keyword);
+                sqlWhere += string.Format(@" and (t3.code like ''%{0}%'' or t3.name like ''%{0}%'' or t3.specification like ''%{0}%'')", keyword);
             }
             if (!string.IsNullOrEmpty(keyword_project))
             {
-                sqlWhere += string.Format(@" and t2.pubuserdefnvc6 like '%{0}%'", keyword_project);
+                sqlWhere += string.Format(@" and t2.pubuserdefnvc6 like ''%{0}%''", keyword_project);
             }
 
-            string sql = string.Format(@"select t2.idproject, t1.id FID,T2.id FEntryID,t1.code FBillNo,t1.voucherdate FDate,T3.code FInvNumber,t3.name FInvName,t3.specification FInvStd,T4.name FUnit,       
-                    CONVERT(FLOAT,t2.quantity) FQty,CONVERT(FLOAT,ISNULL(T2.pubuserdefdecm1,0)) FOutQty,CONVERT(FLOAT,t2.quantity - ISNULL(T2.pubuserdefdecm1,0))  FUnOutQty,       
-                    isnull((SELECT CONVERT(FLOAT,SUM(T5.CanuseBaseQuantity)) FROM ST_CurrentStock T5 WHERE T5.idinventory=T2.idinventory and t5.idwarehouse='{1}'),0) FStockQty       
-                    from Pu_PurchaseRequisition t1 join Pu_PurchaseRequisition_b t2 on t1.id=t2.idPurchaseRequisitionDTO       
-                    LEFT JOIN AA_Inventory T3 ON T2.idinventory=T3.id       
-                    LEFT JOIN AA_Unit T4 ON T3.idunit=T4.ID       
-                    where t2.quantity - ISNULL(T2.pubuserdefdecm1,0)  > 0 AND T2.idproject='{0}' {2}", idProject, idStock, sqlWhere);
-
-            if (noZero)
+            if (!string.IsNullOrEmpty(poflag))
             {
-                sql = string.Format(@"select * from (select t2.idproject, t1.id FID,T2.id FEntryID,t1.code FBillNo,t1.voucherdate FDate,T3.code FInvNumber,t3.name FInvName,t3.specification FInvStd,T4.name FUnit,       
-                    CONVERT(FLOAT,t2.quantity) FQty,CONVERT(FLOAT,ISNULL(T2.pubuserdefdecm1,0)) FOutQty,CONVERT(FLOAT,t2.quantity - ISNULL(T2.pubuserdefdecm1,0))  FUnOutQty,       
-                    isnull((SELECT CONVERT(FLOAT,SUM(T5.CanuseBaseQuantity)) FROM ST_CurrentStock T5 WHERE T5.idinventory=T2.idinventory and t5.idwarehouse='{1}'),0) FStockQty       
-                    from Pu_PurchaseRequisition t1 join Pu_PurchaseRequisition_b t2 on t1.id=t2.idPurchaseRequisitionDTO       
-                    LEFT JOIN AA_Inventory T3 ON T2.idinventory=T3.id       
-                    LEFT JOIN AA_Unit T4 ON T3.idunit=T4.ID       
-                    where t2.quantity - ISNULL(T2.pubuserdefdecm1,0)  > 0 AND T2.idproject='{0}' {2}) as t where t.FStockQty >0 ", idProject, idStock, sqlWhere);
+                sqlWhere += string.Format(@" and isnull(t2.pubuserdefnvc7,''否'') = ''{0}''", poflag);
             }
+
+            string sql = string.Format(@"exec P_ZYSoft_GetPurReqToPO '{0}'", sqlWhere);
             DataTable dt = ZYSoft.DB.BLL.Common.ExecuteDataTable(sql);
+            List<ProjectDetail> source = ToList<ProjectDetail>(dt);
             return JsonConvert.SerializeObject(new
             {
                 status = dt.Rows.Count > 0 ? "success" : "error",
-                data = dt,
+                data = source,
                 msg = ""
             });
         }
@@ -126,6 +130,235 @@ public class ZKMTCGDDHandler : IHttpHandler
                 data = new List<string>(),
                 msg = ex.Message
             });
+        }
+    }
+
+    public static string UnPOMark(string[] ids, string flag = "否")
+    {
+        string errMsg = ""; int effectRow = 0;
+        try
+        {
+            if (ids != null && ids.Length > 0)
+            {
+                List<string> sqlList = new List<string>();
+                new List<string>(ids).ForEach(item =>
+                {
+                    sqlList.Add(string.Format(@"update Pu_PurchaseRequisition_b set pubuserdefnvc7 ='{1}' WHERE id='{0}'", item, flag));
+                });
+                if (sqlList.Count > 0)
+                {
+                    effectRow = ZYSoft.DB.BLL.Common.ExecuteSQLTran(sqlList, ref errMsg);
+                    if (effectRow > 0)
+                    {
+                        errMsg = "更新成功!";
+                    }
+                }
+            }
+            else
+            {
+                errMsg = "没有发现要更新的数据行!";
+            }
+
+            return JsonConvert.SerializeObject(new
+            {
+                status = effectRow > 0 ? "success" : "error",
+                data = new string[] { },
+                msg = errMsg
+            });
+        }
+        catch (Exception e)
+        {
+            return JsonConvert.SerializeObject(new
+            {
+                status = "error",
+                data = new string[] { },
+                msg = "更新过程发生异常!" + e.Message
+            });
+        }
+    }
+
+    public bool BeforeSave<T>(T formData, ref string msg)
+    {
+        return true;
+    }
+
+
+    /*保存单据*/
+    public string SaveBill<T>(T formData, string methosName)
+    {
+        try
+        {
+            string errMsg = "";
+            if (BeforeSave(formData, ref errMsg))
+            {
+                var WsUrl = LoadXML("WsUrl");
+                var formDatas = new List<FormItemModel>();
+                //添加文本
+                formDatas.Add(new FormItemModel()
+                {
+                    Key = "MethodName",
+                    Value = methosName
+                });          //添加文本
+                formDatas.Add(new FormItemModel()
+                {
+                    Key = "JSON",
+                    Value = JsonConvert.SerializeObject(formData)
+                });
+
+                addLogErr("SaveBill", JsonConvert.SerializeObject(formDatas));
+
+                //提交表单
+                var json = doPost(WsUrl, formDatas);
+                TResult result = JsonConvert.DeserializeObject<TResult>(json);
+                return JsonConvert.SerializeObject(new
+                {
+                    status = result.Result == "Y" ? "success" : "error",
+                    data = "",
+                    msg = result.Result == "Y" ? "生成单据成功!" : result.Message
+                });
+            }
+            else
+            {
+                return JsonConvert.SerializeObject(new
+                {
+                    status = "error",
+                    data = "",
+                    msg = "保存单据失败!"
+                });
+            }
+        }
+        catch (Exception)
+        {
+            return JsonConvert.SerializeObject(new
+            {
+                status = "error",
+                data = "",
+                msg = "生成单据发生异常!"
+            });
+        }
+    }
+
+    public string doPost(string url, List<FormItemModel> formItems, CookieContainer cookieContainer = null, string refererUrl = null,
+        System.Text.Encoding encoding = null, int timeOut = 20000)
+    {
+        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+        #region 初始化请求对象
+        request.Method = "POST";
+        request.Timeout = timeOut;
+        request.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
+        request.KeepAlive = true;
+        request.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.57 Safari/537.36";
+        if (!string.IsNullOrEmpty(refererUrl))
+            request.Referer = refererUrl;
+        if (cookieContainer != null)
+            request.CookieContainer = cookieContainer;
+        #endregion
+
+        string boundary = "----" + DateTime.Now.Ticks.ToString("x");//分隔符
+        request.ContentType = string.Format("multipart/form-data; boundary={0}", boundary);
+        //请求流
+        var postStream = new MemoryStream();
+        #region 处理Form表单请求内容
+        //是否用Form上传文件
+        var formUploadFile = formItems != null && formItems.Count > 0;
+        if (formUploadFile)
+        {
+            //文件数据模板
+            string fileFormdataTemplate =
+                "\r\n--" + boundary +
+                "\r\nContent-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"" +
+                "\r\nContent-Type: application/octet-stream" +
+                "\r\n\r\n";
+            //文本数据模板
+            string dataFormdataTemplate =
+                "\r\n--" + boundary +
+                "\r\nContent-Disposition: form-data; name=\"{0}\"" +
+                "\r\n\r\n{1}";
+            foreach (var item in formItems)
+            {
+                string formdata = null;
+                if (item.IsFile)
+                {
+                    //上传文件
+                    formdata = string.Format(
+                        fileFormdataTemplate,
+                        item.Key, //表单键
+                        item.FileName);
+                }
+                else
+                {
+                    //上传文本
+                    formdata = string.Format(
+                        dataFormdataTemplate,
+                        item.Key,
+                        item.Value);
+                }
+
+                //统一处理
+                byte[] formdataBytes = null;
+                //第一行不需要换行
+                if (postStream.Length == 0)
+                    formdataBytes = System.Text.Encoding.UTF8.GetBytes(formdata.Substring(2, formdata.Length - 2));
+                else
+                    formdataBytes = System.Text.Encoding.UTF8.GetBytes(formdata);
+                postStream.Write(formdataBytes, 0, formdataBytes.Length);
+
+                //写入文件内容
+                if (item.FileContent != null && item.FileContent.Length > 0)
+                {
+                    using (var stream = item.FileContent)
+                    {
+                        byte[] buffer = new byte[1024];
+                        int bytesRead = 0;
+                        while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) != 0)
+                        {
+                            postStream.Write(buffer, 0, bytesRead);
+                        }
+                    }
+                }
+            }
+            //结尾
+            var footer = System.Text.Encoding.UTF8.GetBytes("\r\n--" + boundary + "--\r\n");
+            postStream.Write(footer, 0, footer.Length);
+        }
+        else
+        {
+            request.ContentType = "application/x-www-form-urlencoded";
+        }
+        #endregion
+
+        request.ContentLength = postStream.Length;
+
+        #region 输入二进制流
+        if (postStream != null)
+        {
+            postStream.Position = 0;
+            //直接写入流
+            Stream requestStream = request.GetRequestStream();
+
+            byte[] buffer = new byte[1024];
+            int bytesRead = 0;
+            while ((bytesRead = postStream.Read(buffer, 0, buffer.Length)) != 0)
+            {
+                requestStream.Write(buffer, 0, bytesRead);
+            }
+            postStream.Close();//关闭文件访问
+        }
+        #endregion
+
+        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+        if (cookieContainer != null)
+        {
+            response.Cookies = cookieContainer.GetCookies(response.ResponseUri);
+        }
+
+        using (Stream responseStream = response.GetResponseStream())
+        {
+            using (StreamReader myStreamReader = new StreamReader(responseStream, encoding ?? System.Text.Encoding.UTF8))
+            {
+                string retString = myStreamReader.ReadToEnd();
+                return retString;
+            }
         }
     }
 
@@ -179,6 +412,197 @@ public class ZKMTCGDDHandler : IHttpHandler
         }
     }
 
+    public static List<T> ToList<T>(DataTable dt)
+    {
+        var dataColumn = dt.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList();
+
+        var properties = typeof(T).GetProperties();
+        string columnName = string.Empty;
+
+        return dt.AsEnumerable().Select(row =>
+        {
+            var t = System.Activator.CreateInstance<T>();
+            foreach (var p in properties)
+            {
+                columnName = p.Name;
+                if (dataColumn.Contains(columnName))
+                {
+                    if (!p.CanWrite)
+                        continue;
+
+                    object value = row[columnName];
+                    System.Type type = p.PropertyType;
+
+                    if (value != System.DBNull.Value)
+                    {
+                        p.SetValue(t, System.Convert.ChangeType(value, type), null);
+                    }
+                }
+            }
+            return t;
+        }).ToList();
+    }
+
+    #region
+    public class ProjectDetail
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public int FIndex { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public int idproject { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public int FID { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public int FEntryID { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string FBillNo { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string FDate { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public int idinventory { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string FInvNumber { get; set; }
+        /// <summary>
+        ///  
+        /// </summary>
+        public string FInvName { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string FInvStd { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string FUnit { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public decimal FQty { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public decimal FStockQty { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public decimal FSafeQty { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public decimal FUnPOQty { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public decimal FTotalPurReqQty { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public decimal FTotalOutQty { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public decimal FAdviseQty { get; set; }
+
+        public string pubuserdefnvc7 { get; set; }
+    }
+    #endregion
+
+    #region 提交数据 
+    public class PucherOrder
+    {
+        /// <summary>
+        /// 当前登录用户编码
+        /// </summary>
+        public string FUserCode { get; set; }
+
+        /// <summary>
+        /// 当前登录用户名称
+        /// </summary>
+        public string FUserName { get; set; }
+        /// <summary>
+        /// 制单日期
+        /// </summary>
+        public string FDate { get; set; }
+        /// <summary>
+        /// 业务员编码
+        /// </summary>
+        public string FPersonCode { get; set; }
+
+        /// <summary>
+        ///  部门编码
+        /// </summary>
+        public string FDeptCode { get; set; }
+
+        /// <summary>
+        /// 备注
+        /// </summary>
+        public string FMemo { get; set; }
+        /// <summary>
+        /// 明细
+        /// </summary>
+        public List<PucherOrderEntry> Entry { get; set; }
+    }
+
+    public class PucherOrderEntry
+    {
+        /// <summary>
+        /// 供应商编码 
+        /// </summary>
+        public string FVenderCode { get; set; }
+
+        /// <summary>
+        /// 源单ID 
+        /// </summary>
+        public string FSourceBillID { get; set; }
+
+        /// <summary>
+        /// 源单单号 
+        /// </summary>
+        public string FSourceBillNo { get; set; }
+
+        /// <summary>
+        /// 源单明细ID 
+        /// </summary>
+        public string FSourceBillEntryID { get; set; }
+
+        /// <summary>
+        /// 源单明细行号
+        /// </summary>
+        public string FSourceBillEntryRowNo { get; set; }
+        /// <summary>
+        /// 存货编码
+        /// </summary>
+        public string FInvCode { get; set; }
+
+        /// <summary>
+        /// 项目编码 
+        /// </summary>
+        public string FProjectCode { get; set; }
+
+        /// <summary>
+        ///  采购数量
+        /// </summary>
+        public decimal FQuantity { get; set; }
+
+    }
+    #endregion
+
     #region 
     public class Result
     {
@@ -187,6 +611,51 @@ public class ZKMTCGDDHandler : IHttpHandler
         public string msg { get; set; }
     }
     #endregion
+
+    /// <summary>
+    /// 表单数据项
+    /// </summary>
+    public class FormItemModel
+    {
+        /// <summary>
+        /// 表单键，request["key"]
+        /// </summary>
+        public string Key { set; get; }
+        /// <summary>
+        /// 表单值,上传文件时忽略，request["key"].value
+        /// </summary>
+        public string Value { set; get; }
+        /// <summary>
+        /// 是否是文件
+        /// </summary>
+        public bool IsFile
+        {
+            get
+            {
+                if (FileContent == null || FileContent.Length == 0)
+                    return false;
+
+                if (FileContent != null && FileContent.Length > 0 && string.IsNullOrWhiteSpace(FileName))
+                    throw new Exception("上传文件时 FileName 属性值不能为空");
+                return true;
+            }
+        }
+        /// <summary>
+        /// 上传的文件名
+        /// </summary>
+        public string FileName { set; get; }
+        /// <summary>
+        /// 上传的文件内容
+        /// </summary>
+        public Stream FileContent { set; get; }
+    }
+
+    public class TResult
+    {
+        public string Result { get; set; }
+        public string Message { get; set; }
+        public object Data { get; set; }
+    }
 
     public bool IsReusable
     {

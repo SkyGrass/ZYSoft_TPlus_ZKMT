@@ -1,4 +1,4 @@
-﻿const tableconf_qgd = [{
+﻿const tableconf_cgdd = [{
     title: "勾选",
     formatter: "rowSelection",
     titleFormatter: "rowSelection",
@@ -10,10 +10,10 @@
     }
 },
     {
-        title: "序号",
+        title: "序",
         field: "FIndex",
         hozAlign: "center",
-        width: 80,
+        width: 60,
         headerSort: true
     },
 	{
@@ -71,7 +71,7 @@
 	    title: "请购数量",
 	    field: "FQty",
 	    hozAlign: "right",
-	    width: 120,
+	    width: 100,
 	    headerSortTristate: true,
 	    editor: false,
 	},
@@ -79,7 +79,7 @@
 	    title: "可用量",
 	    field: "FStockQty",
 	    hozAlign: "right",
-	    width: 120,
+	    width: 100,
 	    headerSortTristate: true,
 	    editor: false,
 	},
@@ -87,7 +87,7 @@
 	    title: "安全库存",
 	    field: "FSafeQty",
 	    hozAlign: "right",
-	    width: 120,
+	    width: 100,
 	    headerSortTristate: true,
 	    editor: false,
 	},
@@ -95,7 +95,7 @@
 	    title: "未采购量",
 	    field: "FUnPOQty",
 	    hozAlign: "center",
-	    width: 120,
+	    width: 100,
 	    headerSortTristate: true,
 	    hozAlign: "right",
 	    editor: "input",
@@ -105,7 +105,7 @@
 	    title: "总请购量",
 	    field: "FTotalPurReqQty",
 	    hozAlign: "center",
-	    width: 120,
+	    width: 100,
 	    headerSortTristate: true,
 	    hozAlign: "right",
 	    editor: "input",
@@ -115,7 +115,7 @@
 	    title: "总出库量",
 	    field: "FTotalOutQty",
 	    hozAlign: "center",
-	    width: 120,
+	    width: 100,
 	    headerSortTristate: true,
 	    hozAlign: "right",
 	    editor: "input",
@@ -125,11 +125,9 @@
 	    title: "建议采购量",
 	    field: "FAdviseQty",
 	    hozAlign: "center",
-	    width: 120,
+	    width: 100,
 	    headerSortTristate: true,
 	    hozAlign: "right",
-	    editor: "input",
 	    editor: false,
 	}
-
 ]

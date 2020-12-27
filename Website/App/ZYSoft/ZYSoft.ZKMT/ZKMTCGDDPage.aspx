@@ -75,7 +75,7 @@
                             <el-row :gutter="16">
                                 <el-col :span="4">
                                     <el-form-item label="项目">
-                                     <el-select v-model="form.FProjectCode" placeholder="请选择项目" filterable @change="handleChangProject">
+                                     <el-select v-model="codeProject" placeholder="请选择项目" filterable @change="handleChangProject">
                                         <el-option
                                             v-for="item in project"
                                             :key="item.code"
@@ -84,22 +84,18 @@
                                         </el-option>
                                         </el-select>
                                     </el-form-item> 
-                                </el-col> 
-                                 <el-col :span="4">
-                                    <el-form-item label="仓库">
-                                     <el-select v-model="form.FWhCode" placeholder="请选择仓库" @change="handleChangStock">
+                                </el-col>  
+                                 <el-col :span="4"> 
+                                     <el-form-item label="过滤">
+                                     <el-select v-model="poflag">
                                         <el-option
-                                            v-for="item in stock"
+                                            v-for="item in pomark"
                                             :key="item.code"
                                             :label="item.name"
                                             :value="item.code">
                                         </el-option>
                                         </el-select>
-                                    </el-form-item> 
-                                </el-col>  
-                                 <el-col :span="4"> 
-                                      <el-checkbox v-model="noZero">不显示0库存</el-checkbox>
-                                    </el-form-item> 
+                                    </el-form-item>  
                                 </el-col>  
                                    <el-col :span="4">
                                      <el-form-item label="项目机构">
@@ -165,12 +161,8 @@
                                         <el-button @click="queryRecord" size="mini" type="primary" icon="el-icon-search" :loading ="loading" >查询记录</el-button> 
                                     </el-col> 
                                     <el-col :span="2"> 
-                                        <el-button @click="unPOMark" size="mini" type="danger" icon="el-icon-close" :loading ="loading" >不采购</el-button> 
-                                    </el-col> 
-                                    <el-col :span="2"> 
-                                        <el-button @click="updateMark" size="mini" type="success" icon="el-icon-check" :loading ="loading" >更新供应商</el-button> 
-                                    </el-col> 
-
+                                        <el-button @click="updateMark" size="mini" type="success" icon="el-icon-refresh" :loading ="loading" >更新供应商</el-button> 
+                                    </el-col>  
                                  <el-dialog title="供应商选择" :visible.sync="dialogTableVisible" :close-on-click-modal="false" :destroy-on-close="true">
                                       <el-input placeholder="请在此处输入编码或者名称进行检索" v-model="keyword_partner" @keyup.enter.native="getPartner" style="margin:10px 0">
                                         <el-button slot="append" icon="el-icon-search" @click="getPartner"></el-button>
