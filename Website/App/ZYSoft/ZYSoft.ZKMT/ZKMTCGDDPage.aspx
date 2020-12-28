@@ -86,7 +86,7 @@
                                     </el-form-item> 
                                 </el-col>  
                                  <el-col :span="4"> 
-                                     <el-form-item label="过滤">
+                                     <el-form-item label="是否">
                                      <el-select v-model="poflag">
                                         <el-option
                                             v-for="item in pomark"
@@ -159,9 +159,12 @@
                                 </el-col>
                                     <el-col :span="2"> 
                                         <el-button @click="queryRecord" size="mini" type="primary" icon="el-icon-search" :loading ="loading" >查询记录</el-button> 
+                                    </el-col>
+                                    <el-col :span="2"> 
+                                        <el-button @click="updateMark" size="mini" type="success" icon="el-icon-s-custom" :loading ="loading" >选取供应商</el-button> 
                                     </el-col> 
                                     <el-col :span="2"> 
-                                        <el-button @click="updateMark" size="mini" type="success" icon="el-icon-refresh" :loading ="loading" >更新供应商</el-button> 
+                                        <el-button @click="saveTable" size="mini" type="success" icon="el-icon-refresh" :loading ="loading" >提交单据</el-button> 
                                     </el-col>  
                                  <el-dialog title="供应商选择" :visible.sync="dialogTableVisible" :close-on-click-modal="false" :destroy-on-close="true">
                                       <el-input placeholder="请在此处输入编码或者名称进行检索" v-model="keyword_partner" @keyup.enter.native="getPartner" style="margin:10px 0">

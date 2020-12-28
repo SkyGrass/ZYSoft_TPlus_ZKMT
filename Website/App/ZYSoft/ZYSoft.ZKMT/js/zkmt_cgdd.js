@@ -17,7 +17,7 @@
             poflag: "0",
             keyword_partner: "",
             keyword_project: "",
-            pomark: [{ code: "0", name: "采购" }, { code: "1", name: "取消采购" }],
+            pomark: [{ code: "-1", name: "全部" }, { code: "0", name: "采购" }, { code: "1", name: "取消采购" }],
             form: {
                 FUserCode: loginUserCode,
                 FUserName: loginName,
@@ -28,20 +28,20 @@
             },
             dialogTableVisible: false,
             rowMenu: [
-                   {
-                       label: "<i class='fas fa-user'></i>勾选全部相同存货编号行",
-                       action: function (e, row) {
-                           var code = row.getCell("FInvNumber").getValue();
-                           vm.updateRowSelection(code, 1)
-                       }
-                   },
-                    {
-                        label: "<i class='fas fa-user'></i>反选全部相同存货编号行",
-                        action: function (e, row) {
-                            var code = row.getCell("FInvNumber").getValue();
-                            vm.updateRowSelection(code, 0)
-                        }
+                {
+                    label: "<i class='fas fa-user'></i>勾选全部相同存货编号行",
+                    action: function (e, row) {
+                        var code = row.getCell("FInvNumber").getValue();
+                        vm.updateRowSelection(code, 1)
                     }
+                },
+                {
+                    label: "<i class='fas fa-user'></i>反选全部相同存货编号行",
+                    action: function (e, row) {
+                        var code = row.getCell("FInvNumber").getValue();
+                        vm.updateRowSelection(code, 0)
+                    }
+                }
             ],
             partnerList: [],
             currentRow: {},
@@ -141,7 +141,6 @@
             });
         },
         handleChangProject(e) {
-            var that = this;
             var item = this.project.filter(function (f) {
                 return f.code == e
             })
@@ -167,7 +166,9 @@
                 success: function (result) {
                     if (result.status == "success") {
                         that.tableData = result.data.map(function (row) {
-                            row.FAdviseQty = row.FAdviseQty + "";
+                            row.FVenderCode = "";
+                            row.FVenderName = "";
+                            row.FQuantity = row.FUnPOQty;
                             return row;
                         });
                     } else {
@@ -185,7 +186,6 @@
             });
         },
         beforeSave() {
-            var that = this;
             var result = false;
             if (this.form.FDate == null) {
                 result = true;
@@ -194,64 +194,88 @@
                     type: 'warning'
                 });
             }
+            var array = this.grid.getSelectedData();
+            if (array.some(function (row) { return row.FVenderCode == "" })) {
+                result = true;
+                this.$message({
+                    message: '发现了未设置供应商的行,请核实!',
+                    type: 'warning'
+                });
+            } else {
+                if (array.some(function (f) { return f.FQuantity <= 0 })) {
+                    result = true;
+                    this.$message({
+                        message: '本次采购量不合法,请核实!',
+                        type: 'warning'
+                    });
+                }
+            }
 
             return result;
         },
-        saveTable(that) {
+        saveTable() {
+            var that = this;
             if (!this.beforeSave()) {
-                var temp = this.grid.getSelectedData().map(function (m) {
+                var temp = this.grid.getSelectedData().filter(function (row) {
+                    return row.FVenderCode != "" && row.FQuantity > 0
+                }).map(function (m) {
                     return {
-                        FVenderCode: that.currentRow.code,
+                        FVenderCode: m.FVenderCode,
                         FSourceBillID: m.FID,
                         FSourceBillNo: m.FBillNo,
                         FSourceBillEntryID: m.FEntryID,
                         FSourceBillEntryRowNo: m.FIndex,
                         FInvCode: m.FInvNumber,
                         FProjectCode: that.codeProject,
-                        FQuantity: m.FAdviseQty
+                        FQuantity: m.FQuantity
                     }
                 });
 
                 if (temp.length > 0) {
 
-                    that.loading = true;
-                    $.ajax({
-                        type: "POST",
-                        url: "zkmtcgddhandler.ashx",
-                        async: true,
-                        data: { SelectApi: "savepo", formdata: JSON.stringify(Object.assign({}, this.form, { Entry: temp })) },
-                        dataType: "json",
-                        success: function (result) {
-
-                            that.loading = false;
-                            if (result.status == "success") {
-                                that.tableData = [];
-                                that.idProject = -1;
-                                that.codeProject = ""
-                                that.dialogTableVisible = false;
-                                that.currentRow = {}
-                                return that.$message({
-                                    message: result.msg,
-                                    type: 'success'
-                                });
-                            } else {
-                                return that.$message({
-                                    message: result.msg,
+                    this.$confirm('此操作将提交单据,共有' + temp.length + '行设置了供应商, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(function () {
+                        that.loading = true;
+                        $.ajax({
+                            type: "POST",
+                            url: "zkmtcgddhandler.ashx",
+                            async: true,
+                            data: { SelectApi: "savepo", formdata: JSON.stringify(Object.assign({}, this.form, { Entry: temp })) },
+                            dataType: "json",
+                            success: function (result) {
+                                that.loading = false;
+                                if (result.status == "success") {
+                                    that.tableData = [];
+                                    that.idProject = -1;
+                                    that.codeProject = ""
+                                    that.dialogTableVisible = false;
+                                    that.currentRow = {}
+                                    return that.$message({
+                                        message: result.msg,
+                                        type: 'success'
+                                    });
+                                } else {
+                                    return that.$message({
+                                        message: result.msg,
+                                        type: 'warning'
+                                    });
+                                }
+                            },
+                            error: function () {
+                                that.loading = false;
+                                that.$message({
+                                    message: '保存单据失败,请检查!',
                                     type: 'warning'
                                 });
                             }
-                        },
-                        error: function () {
-                            that.loading = false;
-                            that.$message({
-                                message: '保存单据失败,请检查!',
-                                type: 'warning'
-                            });
-                        }
-                    })
+                        })
+                    }).catch(function () { })
                 } else {
                     this.$message({
-                        message: '尚未勾选行记录,请核实!',
+                        message: '尚未查询到已经设置了供应商的行记录,请核实!',
                         type: 'warning'
                     });
                 }
@@ -331,69 +355,6 @@
             })
 
         },
-        unPOMark() {
-            var that = this;
-            var selectRow = vm.grid.getSelectedData();
-            if (selectRow.length <= 0) {
-                return vm.$message({
-                    message: '没有发现选中行!',
-                    type: 'warning'
-                });
-            } else {
-                vm.$confirm('此操作将选中行标记为不采购, 是否继续?', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(function () {
-                    $.ajax({
-                        type: "POST",
-                        url: "zkmtcgddhandler.ashx",
-                        async: true,
-                        data: {
-                            SelectApi: "unpomark",
-                            ids: selectRow.map(function (item) {
-                                return item.FEntryID
-                            }).join(','),
-                            flag: "1"
-
-                        },
-                        dataType: "json",
-                        success: function (result) {
-
-                            that.loading = false;
-                            if (result.status == "success") {
-                                that.tableData = [];
-                                that.idProject = -1;
-                                that.codeProject = ""
-                                return that.$message({
-                                    message: result.msg,
-                                    type: 'success'
-                                });
-                            } else {
-                                return that.$message({
-                                    message: result.msg,
-                                    type: 'warning'
-                                });
-                            }
-                        },
-                        error: function () {
-                            that.loading = false;
-                            return that.$message({
-                                message: '更新单据失败,请检查!',
-                                type: 'warning'
-                            });
-                        }
-                    })
-
-                }).catch(function () {
-                    that.loading = false;
-                    return that.$message({
-                        message: '更新单据失败,请检查!',
-                        type: 'warning'
-                    });
-                })
-            }
-        },
         updateMark() {
             var selectRow = vm.grid.getSelectedData();
             if (selectRow.length <= 0) {
@@ -402,18 +363,35 @@
                     type: 'warning'
                 });
             } else {
+                this.getPartner();
                 this.dialogTableVisible = !this.dialogTableVisible;
             }
         },
         confirmMark() {
             var that = this;
             if (Object.keys(this.currentRow || {}).length > 0) {
-                this.$confirm('此操作将选中行的供应商更新为【' + this.currentRow.name + '】, 是否继续?', '提示', {
+                this.$confirm('此操作将选中行的供应商设置为【' + this.currentRow.name + '】, 是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(function () {
-                    vm.saveTable(that);
+                    var selectedRow = that.grid.getSelectedData();
+                    if (selectedRow && selectedRow.length > 0) {
+                        selectedRow.forEach(function (sr) {
+                            var index = that.tableData.findIndex(function (row) {
+                                return row.FEntryID == sr.FEntryID
+                            })
+                            if (index > -1) {
+                                var row = that.grid.getRowFromPosition(index, true);
+                                //row.getCell('FVenderName').setValue(that.currentRow.name);
+                                //row.getCell('FVenderCode').setValue(that.currentRow.code);
+                                that.tableData[index]["FVenderName"] = that.currentRow.name;
+                                that.tableData[index]["FVenderCode"] = that.currentRow.code
+                            }
+                        })
+                    }
+                    that.dialogTableVisible = !that.dialogTableVisible;
+                    that.currentRow = {};
                 }).catch(function () { })
             } else {
                 return this.$message({
@@ -456,7 +434,7 @@
     },
     watch: {
         tableData: {
-            handler: function (newData) {
+            handler: function (newData, oldData) {
                 this.grid.replaceData(newData);
             },
             deep: true

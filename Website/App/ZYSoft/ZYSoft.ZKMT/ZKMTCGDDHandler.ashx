@@ -19,7 +19,7 @@ public class ZKMTCGDDHandler : IHttpHandler
         context.Response.ContentType = "text/plain";
         if (context.Request.Form["SelectApi"] != null)
         {
-            string result = ""; string methodName = "";
+            string result = "";
             switch (context.Request.Form["SelectApi"].ToLower())
             {
                 case "getpartner":
@@ -28,7 +28,7 @@ public class ZKMTCGDDHandler : IHttpHandler
                     break;
                 case "getprojectdetail":
                     string idProject = context.Request.Form["idProject"] ?? "-1";
-                    string poflag = (context.Request.Form["poflag"] ?? "1").Equals("1") ? "是" : "否";
+                    string poflag = context.Request.Form["poflag"] ?? "0";
                     keyword = context.Request.Form["keyword"] ?? "";
                     string keyword_project = context.Request.Form["keyword_project"] ?? "";
                     result = GetProjectDetail(idProject, poflag, keyword, keyword_project);
@@ -41,7 +41,7 @@ public class ZKMTCGDDHandler : IHttpHandler
                 case "savepo":
                     string formData = context.Request.Form["formData"] ?? "";
                     addLogErr("saveck", formData);
-                    methodName = LoadXML("MethodPO");
+                    string methodName = LoadXML("MethodPO");
                     result = SaveBill(JsonConvert.DeserializeObject<PucherOrder>(formData), methodName);
                     break;
                 default: break;
@@ -64,6 +64,10 @@ public class ZKMTCGDDHandler : IHttpHandler
             if (!string.IsNullOrEmpty(keyword))
             {
                 sqlWhere = string.Format(@" and (code like '%{0}%' or name like '%{0}%' or shorthand like '%{0}%')", keyword);
+            }
+            else
+            {
+                sql = string.Format(@"select top 10 id ,code ,name ,shorthand as zjf from dbo.aa_partner where disabled =0 and (partnertype=228 or partnertype=226)");
             }
             DataTable dt = ZYSoft.DB.BLL.Common.ExecuteDataTable(sql + sqlWhere);
             return JsonConvert.SerializeObject(new
@@ -107,8 +111,9 @@ public class ZKMTCGDDHandler : IHttpHandler
                 sqlWhere += string.Format(@" and t2.pubuserdefnvc6 like ''%{0}%''", keyword_project);
             }
 
-            if (!string.IsNullOrEmpty(poflag))
+            if (poflag != "-1")
             {
+                poflag = poflag.Equals("1") ? "是" : "否";
                 sqlWhere += string.Format(@" and isnull(t2.pubuserdefnvc7,''否'') = ''{0}''", poflag);
             }
 
