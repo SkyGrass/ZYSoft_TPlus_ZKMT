@@ -14,6 +14,7 @@
     field: "FIndex",
     hozAlign: "center",
     width: 60,
+    frozen: true,
     headerSort: true
 },
 {
@@ -21,6 +22,7 @@
     field: "FVenderName",
     hozAlign: "center",
     width: 150,
+    frozen: true,
     headerSort: true
 },
 {
@@ -28,6 +30,23 @@
     field: "FVenderCode",
     hozAlign: "center",
     visible: false,
+    frozen: true,
+    headerSort: true
+},
+{
+    title: "项目编码",
+    field: "FProjectCode",
+    hozAlign: "center",
+    width: 100,
+    frozen: true,
+    headerSort: true
+},
+{
+    title: "项目名称",
+    field: "FProjectName",
+    hozAlign: "center",
+    width: 150,
+    frozen: true,
     headerSort: true
 },
 {
@@ -35,6 +54,7 @@
     field: "FBillNo",
     hozAlign: "center",
     width: 150,
+    frozen: true,
     headerSort: true
 },
 {
@@ -42,6 +62,7 @@
     field: "FDate",
     hozAlign: "center",
     width: 120,
+    frozen: true,
     sorter: "date",
     sorterParams: {
         format: "YYYY-MM-DD"
@@ -54,16 +75,26 @@
     }
 },
 {
+    title: "请购人",
+    field: "FRequisitionPerson",
+    hozAlign: "center",
+    width: 100,
+    frozen: true,
+    headerSort: true
+},
+{
     title: "存货编码",
     field: "FInvNumber",
     hozAlign: "center",
     width: 150,
+    frozen: true,
     sorter: "string"
 },
 {
     title: "存货名称",
     field: "FInvName",
     hozAlign: "center",
+    frozen: true,
     headerSort: false,
     width: 150,
 },
@@ -71,6 +102,7 @@
     title: "存货规格",
     field: "FInvStd",
     hozAlign: "center",
+    frozen: true,
     headerSort: false,
     width: 150,
 },
@@ -78,6 +110,15 @@
     title: "计量单位",
     field: "FUnit",
     hozAlign: "center",
+    frozen: true,
+    headerSort: false,
+    width: 80
+},
+{
+    title: "品牌",
+    field: "FBrand",
+    hozAlign: "center",
+    frozen: true,
     headerSort: false,
     width: 80
 },

@@ -10,13 +10,7 @@
             fileName: "",
             grid: {},
             tableData: [],
-            idProject: -1,
             codeProject: "",
-            maxlength: 0,
-            keyword: "",
-            poflag: "0",
-            keyword_partner: "",
-            keyword_project: "",
             pomark: [{ code: "-1", name: "全部" }, { code: "0", name: "采购" }, { code: "1", name: "取消采购" }],
             form: {
                 FUserCode: loginUserCode,
@@ -55,7 +49,16 @@
                     var value = cell.getValue();
                     return '<input type="button" style="' + vm.btnTitleColor(value) + '"  value="' + vm.btnTitle(value) + '">'
                 }
-            }
+            },
+            idProject: "",
+            keyword_code: "",
+            poflag: "0",
+            keyword_project: "",
+            keyword: "",
+            keyword_billno: "",
+            keyword_requser: "",
+            keyword_reqdate: [new moment().startOf('month').format('YYYY-MM-DD'), new moment().endOf('month').format('YYYY-MM-DD')],
+            keyword_partner: "",
         };
     },
     methods: {
@@ -151,17 +154,22 @@
         },
         getList() {
             var that = this;
-            if (this.idProject < 0) {
-                return that.$message({
-                    message: '请先选择项目!',
-                    type: 'warning'
-                });
-            }
             $.ajax({
                 type: "POST",
                 url: "zkmtcgddhandler.ashx",
                 async: true,
-                data: { SelectApi: "getprojectdetail", idProject: this.idProject, poflag: this.poflag, keyword: this.keyword, keyword_project: this.keyword_project },
+                data: {
+                    SelectApi: "getprojectdetail",
+                    idProject: this.idProject,
+                    projectCode: this.keyword_code,
+                    poflag: this.poflag,
+                    keyword_project: this.keyword_project,
+                    keyword: this.keyword,
+                    billno: this.keyword_billno,
+                    requser: this.keyword_requser,
+                    reqdate_begin: this.keyword_reqdate[0],
+                    reqdate_end: this.keyword_reqdate[1]
+                },
                 dataType: "json",
                 success: function (result) {
                     if (result.status == "success") {
@@ -178,7 +186,6 @@
                             type: 'warning'
                         });
                     }
-                    that.maxlength = result.data.length;
                 },
                 error: function () {
                     that.tableData = [];
@@ -226,7 +233,7 @@
                         FSourceBillEntryID: m.FEntryID,
                         FSourceBillEntryRowNo: m.FIndex,
                         FInvCode: m.FInvNumber,
-                        FProjectCode: that.codeProject,
+                        FProjectCode: m.ProejctCode,
                         FQuantity: m.FQuantity
                     }
                 });
@@ -249,7 +256,7 @@
                                 that.loading = false;
                                 if (result.status == "success") {
                                     that.tableData = [];
-                                    that.idProject = -1;
+                                    that.idProject = "";
                                     that.codeProject = ""
                                     that.dialogTableVisible = false;
                                     that.currentRow = {}

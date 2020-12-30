@@ -23,15 +23,20 @@ public class ZKMTCGDDHandler : IHttpHandler
             switch (context.Request.Form["SelectApi"].ToLower())
             {
                 case "getpartner":
-                    string keyword = context.Request.Form["keyword"] ?? "";
-                    result = GetPartner(keyword);
+                    string keyword_partner = context.Request.Form["keyword"] ?? "";
+                    result = GetPartner(keyword_partner);
                     break;
                 case "getprojectdetail":
-                    string idProject = context.Request.Form["idProject"] ?? "-1";
+                    string idProject = context.Request.Form["idProject"] ?? "";
+                    string projectCode = context.Request.Form["projectCode"] ?? "";
                     string poflag = context.Request.Form["poflag"] ?? "0";
-                    keyword = context.Request.Form["keyword"] ?? "";
                     string keyword_project = context.Request.Form["keyword_project"] ?? "";
-                    result = GetProjectDetail(idProject, poflag, keyword, keyword_project);
+                    string keyword = context.Request.Form["keyword"] ?? "";
+                    string billno = context.Request.Form["billno"] ?? "";
+                    string requser = context.Request.Form["requser"] ?? "";
+                    string reqdate_begin = context.Request.Form["reqdate_begin"] ?? "";
+                    string reqdate_end = context.Request.Form["reqdate_end"] ?? "";
+                    result = GetProjectDetail(idProject, poflag, keyword, keyword_project, projectCode, billno, requser, reqdate_begin, reqdate_end);
                     break;
                 case "unpomark":
                     string ids = context.Request.Form["ids"] ?? string.Empty;
@@ -92,7 +97,9 @@ public class ZKMTCGDDHandler : IHttpHandler
     /// 库存
     /// </summary>
     /// <returns></returns>
-    public string GetProjectDetail(string idProject, string poflag = "否", string keyword = "", string keyword_project = "")
+    public string GetProjectDetail(string idProject, string poflag = "否",
+        string keyword = "", string keyword_project = "", string projectcode = "",
+        string billno = "", string requser = "", string reqdate_begin = "", string reqdate_end = "")
     {
         var list = new List<Result>();
         try
@@ -100,7 +107,7 @@ public class ZKMTCGDDHandler : IHttpHandler
             string sqlWhere = "";
             if (!string.IsNullOrEmpty(idProject))
             {
-                sqlWhere += string.Format(@"  t2.idproject=''{0}'' ", idProject);
+                sqlWhere += string.Format(@" and t2.idproject=''{0}'' ", idProject);
             }
             if (!string.IsNullOrEmpty(keyword))
             {
@@ -115,6 +122,36 @@ public class ZKMTCGDDHandler : IHttpHandler
             {
                 poflag = poflag.Equals("1") ? "是" : "否";
                 sqlWhere += string.Format(@" and isnull(t2.pubuserdefnvc7,''否'') = ''{0}''", poflag);
+            }
+
+            if (!string.IsNullOrEmpty(projectcode))
+            {
+                sqlWhere += string.Format(@" and t6.code like ''%{0}%''", projectcode);
+            }
+
+            if (!string.IsNullOrEmpty(billno))
+            {
+                sqlWhere += string.Format(@" and t1.code like ''%{0}%''", billno);
+            }
+
+            if (!string.IsNullOrEmpty(requser))
+            {
+                sqlWhere += string.Format(@" and t7.name like ''%{0}%''", requser);
+            }
+
+            if (!string.IsNullOrEmpty(reqdate_begin))
+            {
+                sqlWhere += string.Format(@" and t1.voucherdate >= ''{0} 00:00:00''", reqdate_begin);
+            }
+
+            if (!string.IsNullOrEmpty(reqdate_end))
+            {
+                sqlWhere += string.Format(@" and t1.voucherdate <= ''{0} 23:59:59''", reqdate_end);
+            }
+
+            if (sqlWhere.StartsWith(" and "))
+            {
+                sqlWhere = sqlWhere.Remove(0, 4);
             }
 
             string sql = string.Format(@"exec P_ZYSoft_GetPurReqToPO '{0}'", sqlWhere);
