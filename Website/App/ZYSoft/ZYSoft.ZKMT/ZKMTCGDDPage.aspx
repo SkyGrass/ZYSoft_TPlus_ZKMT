@@ -59,8 +59,9 @@
         .el-form--label-left .el-form-item__label {
             text-align: center !important;
         }
-        .datepickercss {
-            width:inherit !important;
+
+        .datepickercss1 {
+            width: inherit !important;
         }
     </style>
 </head>
@@ -98,7 +99,7 @@
                                     </el-form-item>  
                                 </el-col>
                                  <el-col :span="4"> 
-                                     <el-form-item label="是否">
+                                     <el-form-item label="无需采购">
                                      <el-select v-model="poflag" style="width: 100%;">
                                         <el-option
                                             v-for="item in pomark"
@@ -107,7 +108,7 @@
                                             :value="item.code">
                                         </el-option>
                                     </el-select>
-                                    </el-form-item>  
+                                    </el-form-item>
                                 </el-col>  
                                 <el-col :span="4">
                                      <el-form-item label="项目机构">
@@ -128,27 +129,21 @@
                                           v-model="keyword">
                                         </el-input>
                                      </el-form-item>  
-                                </el-col>
-                                <el-col :span="4">
-                                     <el-form-item label="单号">
-                                         <el-input
-                                          :rows="1"
-                                          placeholder="请输入请购单号"
-                                          v-model="keyword_billno">
-                                        </el-input>
-                                    </el-form-item>  
-                                </el-col>
+                                </el-col> 
                                 <el-col :span="4">
                                      <el-form-item label="请购人">
-                                         <el-input
-                                          :rows="1"
-                                          placeholder="请输入请购人明细"
-                                          v-model="keyword_requser">
-                                        </el-input>
+                                        <el-select v-model="keyword_requser" placeholder="请选择请购人" filterable clearable style="width: 100%;">
+                                        <el-option
+                                            v-for="item in poperson"
+                                            :key="item.code"
+                                            :label="item.name"
+                                            :value="item.name">
+                                        </el-option>
+                                        </el-select>
                                     </el-form-item>
                                 </el-col>
                                 <el-col :span="5">
-                                    <el-form-item label="请购日期">
+                                    <el-form-item label="日期">
                                         <el-date-picker
                                             class="datepickercss"
                                             v-model="keyword_reqdate"
@@ -161,6 +156,23 @@
                                     </el-form-item>  
                                 </el-col>
                              </el-row>
+                            <el-row :gutter="16">
+                                <el-col :span="12">
+                                     <el-form-item label="请购单号"> 
+                                        <el-select v-model="keyword_billno" multiple clearable placeholder="请输入请购单号" style="width: 100%;">
+                                        <el-option
+                                            v-for="item in billno"
+                                            :key="item.code"
+                                            :label="item.name"
+                                            :value="item.code">
+                                        </el-option>
+                                        </el-select>
+                                    </el-form-item>  
+                                </el-col>
+                                <el-col :span="2"> 
+                                        <el-button @click="queryRecord" size="mini" type="primary" icon="el-icon-search" :loading ="loading" >查询记录</el-button> 
+                                 </el-col>
+                            </el-row>
                              <el-row :gutter="16">
                                  <el-col :span="4">
                                     <el-form-item label="制单人">
@@ -206,10 +218,7 @@
                                           v-model="form.FMemo">
                                         </el-input>
                                     </el-form-item>
-                                </el-col>
-                                  <el-col :span="2"> 
-                                        <el-button @click="queryRecord" size="mini" type="primary" icon="el-icon-search" :loading ="loading" >查询记录</el-button> 
-                                    </el-col>
+                                </el-col> 
                                     <el-col :span="2"> 
                                         <el-button @click="updateMark" size="mini" type="success" icon="el-icon-s-custom" :loading ="loading" >选取供应商</el-button> 
                                     </el-col> 

@@ -26,6 +26,14 @@ public class ZKMTCGDDHandler : IHttpHandler
                     string keyword_partner = context.Request.Form["keyword"] ?? "";
                     result = GetPartner(keyword_partner);
                     break;
+                case "getpobillno":
+                    string keyword_billno = context.Request.Form["keyword"] ?? "";
+                    result = GetBillNo(keyword_billno);
+                    break;
+                case "getpoperson":
+                    string keyword_person = context.Request.Form["keyword"] ?? "";
+                    result = GetPerson(keyword_person);
+                    break;
                 case "getprojectdetail":
                     string idProject = context.Request.Form["idProject"] ?? "";
                     string projectCode = context.Request.Form["projectCode"] ?? "";
@@ -94,6 +102,81 @@ public class ZKMTCGDDHandler : IHttpHandler
     }
 
     /// <summary>
+    /// 获取请购单号
+    /// </summary>
+    /// <returns></returns>
+    public string GetBillNo(string keyword)
+    {
+        var list = new List<Result>();
+        try
+        {
+            string sqlWhere = "";
+            string sql = string.Format(@"select  distinct  t1.code,t1.code as name                     
+                                        from Pu_PurchaseRequisition t1 join Pu_PurchaseRequisition_b t2 on t1.id=t2.idPurchaseRequisitionDTO   
+                                            where   t2.quantity - ISNULL(T2.baseCumExecuteQuantity ,0)  > 0 AND ISNULL(T1.auditor,'') <>''");
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                sqlWhere = string.Format(@" and t1.code like '%{0}%'", keyword);
+            }
+
+            DataTable dt = ZYSoft.DB.BLL.Common.ExecuteDataTable(sql + sqlWhere + " order by t1.code");
+            return JsonConvert.SerializeObject(new
+            {
+                status = dt.Rows.Count > 0 ? "success" : "error",
+                data = dt,
+                msg = ""
+            });
+        }
+        catch (Exception ex)
+        {
+            return JsonConvert.SerializeObject(new
+            {
+                status = "error",
+                data = new List<string>(),
+                msg = ex.Message
+            });
+        }
+    }
+
+    /// <summary>
+    /// 获取请购人
+    /// </summary>
+    /// <returns></returns>
+    public string GetPerson(string keyword)
+    {
+        var list = new List<Result>();
+        try
+        {
+            string sqlWhere = "";
+            string sql = string.Format(@"select distinct T3.name,t3.code
+                                    from Pu_PurchaseRequisition t1 join Pu_PurchaseRequisition_b t2 on t1.id=t2.idPurchaseRequisitionDTO
+                                    left outer join AA_Person t3 on t3.id=t1.idrequisitionperson 
+                                    where   t2.quantity - ISNULL(T2.baseCumExecuteQuantity ,0)  > 0 AND ISNULL(T1.auditor,'') <>'' ");
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                sqlWhere = string.Format(@" and (t3.name like '%{0}% or t3.code like '%{0}%' or t3.shorthand like '%{0}%')'", keyword);
+            }
+
+            DataTable dt = ZYSoft.DB.BLL.Common.ExecuteDataTable(sql + sqlWhere + " order by t3.name ");
+            return JsonConvert.SerializeObject(new
+            {
+                status = dt.Rows.Count > 0 ? "success" : "error",
+                data = dt,
+                msg = ""
+            });
+        }
+        catch (Exception ex)
+        {
+            return JsonConvert.SerializeObject(new
+            {
+                status = "error",
+                data = new List<string>(),
+                msg = ex.Message
+            });
+        }
+    }
+
+    /// <summary>
     /// 库存
     /// </summary>
     /// <returns></returns>
@@ -131,7 +214,7 @@ public class ZKMTCGDDHandler : IHttpHandler
 
             if (!string.IsNullOrEmpty(billno))
             {
-                sqlWhere += string.Format(@" and t1.code like ''%{0}%''", billno);
+                sqlWhere += string.Format(@" and t1.code in ({0})", billno);
             }
 
             if (!string.IsNullOrEmpty(requser))

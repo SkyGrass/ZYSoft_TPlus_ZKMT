@@ -4,6 +4,8 @@
         return {
             project: [],
             persons: [],
+            poperson: [],
+            billno: [],
             dept: [],
             user: [{ code: loginUserCode, name: loginName }],
             loading: false,
@@ -11,7 +13,7 @@
             grid: {},
             tableData: [],
             codeProject: "",
-            pomark: [{ code: "-1", name: "全部" }, { code: "0", name: "采购" }, { code: "1", name: "取消采购" }],
+            pomark: [{ code: "-1", name: "全部" }, { code: "0", name: "否" }, { code: "1", name: "是" }],
             form: {
                 FUserCode: loginUserCode,
                 FUserName: loginName,
@@ -143,6 +145,55 @@
                 }
             });
         },
+        handleGetPOBillNo() {
+            var that = this;
+            $.ajax({
+                type: "POST",
+                url: "zkmtcgddhandler.ashx",
+                async: true,
+                data: { SelectApi: "getpobillno", keyword: "" },
+                dataType: "json",
+                success: function (result) {
+                    if (result.status == "success") {
+                        that.billno = result.data;
+                        if (that.billno.length > 0) {
+                        }
+                    } else {
+                        return that.$message({
+                            message: '未能查询到请购单号信息!',
+                            type: 'warning'
+                        });
+                    }
+                },
+                error: function () {
+                }
+            });
+        },
+        handleGetPOPerson() {
+            var that = this;
+            $.ajax({
+                type: "POST",
+                url: "zkmtcgddhandler.ashx",
+                async: true,
+                data: { SelectApi: "getpoperson", keyword: "" },
+                dataType: "json",
+                success: function (result) {
+                    if (result.status == "success") {
+                        that.poperson = result.data;
+                        if (that.poperson.length > 0) {
+                            //that.form.FPersonCode = that.persons[0]["code"];
+                        }
+                    } else {
+                        return that.$message({
+                            message: '未能查询到请购人信息!',
+                            type: 'warning'
+                        });
+                    }
+                },
+                error: function () {
+                }
+            });
+        },
         handleChangProject(e) {
             var item = this.project.filter(function (f) {
                 return f.code == e
@@ -165,7 +216,7 @@
                     poflag: this.poflag,
                     keyword_project: this.keyword_project,
                     keyword: this.keyword,
-                    billno: this.keyword_billno,
+                    billno: this.keyword_billno.map(function (item) { return "''" + item + "''"; }).join(","),
                     requser: this.keyword_requser,
                     reqdate_begin: this.keyword_reqdate[0],
                     reqdate_end: this.keyword_reqdate[1]
@@ -451,6 +502,8 @@
         var that = this;
         this.handleGetProject();
         this.handleGetPerson();
+        this.handleGetPOPerson();
+        this.handleGetPOBillNo();
         this.handleGetDept();
 
         this.maxHeight = ($(window).height() - $("#header").height() - 80)
