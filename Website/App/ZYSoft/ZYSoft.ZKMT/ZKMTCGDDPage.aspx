@@ -76,19 +76,7 @@
                     <el-header id="header" style="height:inherit !important">
                       
                         <el-form :model="form" label-position="left" label-width="80px" size="mini">
-                            <el-row :gutter="17">
-                                <el-col :span="4">
-                                    <el-form-item label="项目">
-                                     <el-select v-model="codeProject" placeholder="请选择项目" filterable clearable @change="handleChangProject"  style="width: 100%;">
-                                        <el-option
-                                            v-for="item in project"
-                                            :key="item.code"
-                                            :label="item.name"
-                                            :value="item.code">
-                                        </el-option>
-                                        </el-select>
-                                    </el-form-item> 
-                                </el-col>  
+                            <el-row :gutter="17"> 
                                 <el-col :span="4">
                                      <el-form-item label="编码">
                                          <el-input
@@ -129,18 +117,6 @@
                                           v-model="keyword">
                                         </el-input>
                                      </el-form-item>  
-                                </el-col> 
-                                <el-col :span="4">
-                                     <el-form-item label="请购人">
-                                        <el-select v-model="keyword_requser" placeholder="请选择请购人" filterable clearable style="width: 100%;">
-                                        <el-option
-                                            v-for="item in poperson"
-                                            :key="item.code"
-                                            :label="item.name"
-                                            :value="item.name">
-                                        </el-option>
-                                        </el-select>
-                                    </el-form-item>
                                 </el-col>
                                 <el-col :span="5">
                                     <el-form-item label="日期">
@@ -156,6 +132,34 @@
                                     </el-form-item>  
                                 </el-col>
                              </el-row>
+                             <el-row :gutter="16">
+                                 <el-col :span="12">
+                                        <el-form-item label="项目">
+                                         <el-select v-model="codeProject" multiple placeholder="请选择项目" filterable clearable style="width: 100%;">
+                                            <el-option
+                                                v-for="item in project"
+                                                :key="item.id"
+                                                :label="item.name"
+                                                :value="item.id">
+                                            </el-option>
+                                            </el-select>
+                                        </el-form-item> 
+                                </el-col> 
+                             </el-row> 
+                             <el-row :gutter="16">
+                               <el-col :span="12">
+                                     <el-form-item label="请购人">
+                                        <el-select v-model="keyword_requser" multiple placeholder="请选择请购人" filterable clearable style="width: 100%;">
+                                        <el-option
+                                            v-for="item in poperson"
+                                            :key="item.code"
+                                            :label="item.name"
+                                            :value="item.name">
+                                        </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                </el-col>
+                            </el-row>
                             <el-row :gutter="16">
                                 <el-col :span="12">
                                      <el-form-item label="请购单号"> 
@@ -170,7 +174,7 @@
                                     </el-form-item>  
                                 </el-col>
                                 <el-col :span="2"> 
-                                        <el-button @click="queryRecord" size="mini" type="primary" icon="el-icon-search" :loading ="loading" >查询记录</el-button> 
+                                    <el-button @click="queryRecord" size="mini" type="primary" icon="el-icon-search" :loading ="loading" >查询记录</el-button> 
                                  </el-col>
                             </el-row>
                              <el-row :gutter="16">

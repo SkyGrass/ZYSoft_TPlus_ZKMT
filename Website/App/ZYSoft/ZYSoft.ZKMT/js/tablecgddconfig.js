@@ -18,6 +18,22 @@
     headerSort: true
 },
 {
+    title: "采购状态",
+    field: "pubuserdefnvc7",
+    hozAlign: "center",
+    width: 100,
+    frozen: true,
+    headerSort: true,
+    formatter: function (cell, formatterParams) {
+        var value = cell.getValue();
+        if (value == "否") {
+            return "<span style='color:green'>采购</span>";
+        } else {
+            return "<span style='color:red;font-weight:bold;'>已中止</span>";
+        }
+    }
+},
+{
     title: "供应商",
     field: "FVenderName",
     hozAlign: "center",
@@ -88,14 +104,14 @@
     hozAlign: "center",
     width: 150,
     frozen: true,
-    sorter: "string"
+    headerSort: true,
 },
 {
     title: "存货名称",
     field: "FInvName",
     hozAlign: "center",
     frozen: true,
-    headerSort: false,
+    headerSort: true,
     width: 150,
 },
 {
@@ -119,7 +135,7 @@
     field: "FBrand",
     hozAlign: "center",
     frozen: true,
-    headerSort: false,
+    headerSort: true,
     width: 80
 },
 {
@@ -137,6 +153,11 @@
     width: 100,
     headerSortTristate: true,
     editor: false,
+    formatter: "color",
+    formatter: function (cell, formatterParams) {
+        var value = cell.getValue();
+        return "<span style='color:#FF8C00; font-weight:bold;'>" + value + "</span>";
+    }
 },
 {
     title: "安全库存",

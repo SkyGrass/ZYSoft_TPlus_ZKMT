@@ -52,13 +52,12 @@
                     return '<input type="button" style="' + vm.btnTitleColor(value) + '"  value="' + vm.btnTitle(value) + '">'
                 }
             },
-            idProject: "",
             keyword_code: "",
             poflag: "0",
             keyword_project: "",
             keyword: "",
-            keyword_billno: "",
-            keyword_requser: "",
+            keyword_billno: [],
+            keyword_requser: [],
             keyword_reqdate: [new moment().startOf('month').format('YYYY-MM-DD'), new moment().endOf('month').format('YYYY-MM-DD')],
             keyword_partner: "",
         };
@@ -194,12 +193,6 @@
                 }
             });
         },
-        handleChangProject(e) {
-            var item = this.project.filter(function (f) {
-                return f.code == e
-            })
-            this.idProject = item[0].id;
-        },
         queryRecord() {
             this.getList()
         },
@@ -211,13 +204,13 @@
                 async: true,
                 data: {
                     SelectApi: "getprojectdetail",
-                    idProject: this.idProject,
+                    idProject: this.codeProject.map(function (item) { return "''" + item + "''"; }).join(","),
                     projectCode: this.keyword_code,
                     poflag: this.poflag,
                     keyword_project: this.keyword_project,
                     keyword: this.keyword,
                     billno: this.keyword_billno.map(function (item) { return "''" + item + "''"; }).join(","),
-                    requser: this.keyword_requser,
+                    requser: this.keyword_requser.map(function (item) { return "''" + item + "''"; }).join(","),
                     reqdate_begin: this.keyword_reqdate[0],
                     reqdate_end: this.keyword_reqdate[1]
                 },
@@ -307,8 +300,7 @@
                                 that.loading = false;
                                 if (result.status == "success") {
                                     that.tableData = [];
-                                    that.idProject = "";
-                                    that.codeProject = ""
+                                    that.codeProject = [];
                                     that.dialogTableVisible = false;
                                     that.currentRow = {}
                                     return that.$message({

@@ -190,7 +190,7 @@ public class ZKMTCGDDHandler : IHttpHandler
             string sqlWhere = "";
             if (!string.IsNullOrEmpty(idProject))
             {
-                sqlWhere += string.Format(@" and t2.idproject=''{0}'' ", idProject);
+                sqlWhere += string.Format(@" and t2.idproject in ({0}) ", idProject);
             }
             if (!string.IsNullOrEmpty(keyword))
             {
@@ -219,7 +219,7 @@ public class ZKMTCGDDHandler : IHttpHandler
 
             if (!string.IsNullOrEmpty(requser))
             {
-                sqlWhere += string.Format(@" and t7.name like ''%{0}%''", requser);
+                sqlWhere += string.Format(@" and t7.name in ({0})", requser);
             }
 
             if (!string.IsNullOrEmpty(reqdate_begin))
