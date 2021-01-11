@@ -571,7 +571,25 @@ public class ZKMTCGDDHandler : IHttpHandler
     #region
     public class ProjectDetail
     {
-     /// <summary>        ///         /// </summary>        public int FIndex { get; set; }        /// <summary>        ///         /// </summary>        public int idproject { get; set; }		/// <summary>        ///         /// </summary>        public string FProjectCode { get; set; }		/// <summary>        ///         /// </summary>        public string FProjectName { get; set; }        /// <summary>        ///         /// </summary>        public int FID { get; set; }        /// <summary>        ///         /// </summary>        public int FEntryID { get; set; }        /// <summary>        ///         /// </summary>        public string FBillNo { get; set; }        /// <summary>        ///         /// </summary>        public string FDate { get; set; }		/// <summary>        ///         /// </summary>        public string FRequisitionPerson { get; set; }        /// <summary>        ///         /// </summary>        public int idinventory { get; set; }        /// <summary>        ///         /// </summary>        public string FInvNumber { get; set; }        /// <summary>        ///          /// </summary>        public string FInvName { get; set; }        /// <summary>        ///         /// </summary>        public string FInvStd { get; set; }        /// <summary>        ///         /// </summary>        public string FUnit { get; set; }		/// <summary>        ///         /// </summary>        public string FBrand { get; set; }        /// <summary>        ///         /// </summary>        public decimal FQty { get; set; }        /// <summary>        ///         /// </summary>        public decimal FStockQty { get; set; }        /// <summary>        ///         /// </summary>        public decimal FSafeQty { get; set; }        /// <summary>        ///         /// </summary>        public decimal FUnPOQty { get; set; }
+        /// <summary>        ///         /// </summary>        public int FIndex { get; set; }
+        /// <summary>        ///         /// </summary>        public int idproject { get; set; }
+        /// <summary>        ///         /// </summary>        public string FProjectCode { get; set; }
+        /// <summary>        ///         /// </summary>        public string FProjectName { get; set; }
+        /// <summary>        ///         /// </summary>        public int FID { get; set; }
+        /// <summary>        ///         /// </summary>        public int FEntryID { get; set; }
+        /// <summary>        ///         /// </summary>        public string FBillNo { get; set; }
+        /// <summary>        ///         /// </summary>        public string FDate { get; set; }
+        /// <summary>        ///         /// </summary>        public string FRequisitionPerson { get; set; }
+        /// <summary>        ///         /// </summary>        public int idinventory { get; set; }
+        /// <summary>        ///         /// </summary>        public string FInvNumber { get; set; }
+        /// <summary>        ///          /// </summary>        public string FInvName { get; set; }
+        /// <summary>        ///         /// </summary>        public string FInvStd { get; set; }
+        /// <summary>        ///         /// </summary>        public string FUnit { get; set; }
+        /// <summary>        ///         /// </summary>        public string FBrand { get; set; }
+        /// <summary>        ///         /// </summary>        public decimal FQty { get; set; }
+        /// <summary>        ///         /// </summary>        public decimal FStockQty { get; set; }
+        /// <summary>        ///         /// </summary>        public decimal FSafeQty { get; set; }
+        /// <summary>        ///         /// </summary>        public decimal FUnPOQty { get; set; }
         /// <summary>        ///         /// </summary>
         public string pubuserdefnvc7 { get; set; }
     }
