@@ -10,7 +10,6 @@
             loading: false,
             fileName: "",
             grid: {},
-            tableData: [],
             form: {
                 FUserCode: loginUserCode,
                 FUserName: loginName,
@@ -27,7 +26,7 @@
         },
         uploadSuccess(response, file, fileList) {
             if (response.state == "success") {
-                this.tableData = response.data;
+                this.grid.replaceData(response.data);
                 this.fileName = response.fileName;
             }
             this.loading = false;
@@ -40,22 +39,22 @@
             this.loading = true;
         },
         clearTable() {
-            this.tableData = [];
+            this.grid.clearData();
         },
         checkTable() {
             const that = this;
-            if (this.tableData.length <= 0) return;
+            if (this.grid.getData().length <= 0) return;
             this.loading = true;
             $.ajax({
                 type: "POST",
                 url: "uploadhandler.ashx",
                 async: true,
-                data: { SelectApi: "check", dataSource: JSON.stringify(that.tableData) },
+                data: { SelectApi: "check", dataSource: JSON.stringify(that.grid.getData()) },
                 dataType: "json",
                 success: function (response) {
                     that.loading = false;
                     if (response.state == "success") {
-                        that.tableData = response.data;
+                        that.grid.replaceData(response.data);
                     }
                     that.loading = false;
                     return that.$message({
@@ -189,7 +188,7 @@
                         success: function (result) {
                             that.loading = false;
                             if (result.status == "success") {
-                                that.tableData = [];
+                                that.grid.clearData();
                                 return that.$message({
                                     message: result.msg,
                                     type: 'success'
@@ -219,7 +218,7 @@
         }
     },
     watch: {
-        tableData: {
+        tableData1: {
             handler: function (newData) {
                 this.grid.replaceData(newData);
             },
@@ -239,7 +238,7 @@
             height: this.maxHeight,
             columnHeaderVertAlign: "bottom",
             selectable: true, //make rows selectable
-            data: this.tableData, //set initial table data
+            //data: this.tableData, //set initial table data
             columns: tableconf_qgd
         })
     }

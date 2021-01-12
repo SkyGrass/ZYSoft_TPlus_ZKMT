@@ -93,7 +93,13 @@
 	    hozAlign: "right",
 	    editor: "input",
 	    editor: true,
-	    validator: ["min:0", "numeric"]
+	    validator: {
+	        type: function (cell, value, parameters) {
+	            var FUnOutQty = value;
+	            var FQty = cell.getData()['FQty'];
+	            var FOutQty = cell.getData()['FOutQty'];
+	            return (Number(FQty) - Number(FOutQty) >= FUnOutQty)
+	        }
+	    }
 	}
-
 ]

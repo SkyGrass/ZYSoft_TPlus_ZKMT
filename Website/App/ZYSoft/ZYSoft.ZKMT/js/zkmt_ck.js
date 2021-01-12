@@ -12,7 +12,6 @@
             loading: false,
             fileName: "",
             grid: {},
-            tableData: [],
             idProject: -1,
             idStock: -1,
             noZero: false,
@@ -32,9 +31,6 @@
         };
     },
     methods: {
-        clearTable() {
-            this.tableData = [];
-        },
         handleGetProject() {
             var that = this;
             $.ajax({
@@ -170,9 +166,9 @@
                 dataType: "json",
                 success: function (result) {
                     if (result.status == "success") {
-                        that.tableData = result.data;
+                        that.grid.replaceData(result.data)
                     } else {
-                        that.tableData = [];
+                        that.grid.clearData();
                         return that.$message({
                             message: '未能查询到项目信息!',
                             type: 'warning'
@@ -181,7 +177,7 @@
                     that.maxlength = result.data.length;
                 },
                 error: function () {
-                    that.tableData = [];
+                    that.grid.clearData();
                 }
             });
         },
@@ -248,7 +244,7 @@
 
                             that.loading = false;
                             if (result.status == "success") {
-                                that.tableData = [];
+                                that.grid.clearData();
                                 that.form.FProjectCode = "";
                                 that.form.FWhCode = "";
                                 return that.$message({
@@ -280,7 +276,7 @@
         }
     },
     watch: {
-        tableData: {
+        tableData1: {
             handler: function (newData) {
                 this.grid.replaceData(newData);
             },
@@ -303,8 +299,8 @@
             columnHeaderVertAlign: "bottom",
             selectable: 9999, //make rows selectable
             selectableRollingSelection: false,
-            data: this.tableData, //set initial table data
-            columns: tableconf_qgd
+            // data: this.tableData, //set initial table data
+            columns: tableconf_qgd,
         })
     }
 });

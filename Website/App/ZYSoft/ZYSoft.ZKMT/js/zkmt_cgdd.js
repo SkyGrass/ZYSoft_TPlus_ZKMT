@@ -11,7 +11,6 @@
             loading: false,
             fileName: "",
             grid: {},
-            tableData: [],
             codeProject: "",
             pomark: [{ code: "-1", name: "全部" }, { code: "0", name: "否" }, { code: "1", name: "是" }],
             form: {
@@ -217,14 +216,14 @@
                 dataType: "json",
                 success: function (result) {
                     if (result.status == "success") {
-                        that.tableData = result.data.map(function (row) {
+                        that.grid.replaceData(result.data.map(function (row) {
                             row.FVenderCode = "";
                             row.FVenderName = "";
                             row.FQuantity = row.FUnPOQty;
                             return row;
-                        });
+                        }))
                     } else {
-                        that.tableData = [];
+                        that.grid.clearData();
                         return that.$message({
                             message: '未能查询到项目信息!',
                             type: 'warning'
@@ -232,7 +231,7 @@
                     }
                 },
                 error: function () {
-                    that.tableData = [];
+                    that.grid.clearData();
                 }
             });
         },
@@ -299,7 +298,7 @@
                             success: function (result) {
                                 that.loading = false;
                                 if (result.status == "success") {
-                                    that.tableData = [];
+                                    that.grid.clearData();
                                     that.codeProject = [];
                                     that.dialogTableVisible = false;
                                     that.currentRow = {}
@@ -339,7 +338,7 @@
                     type: 'warning'
                 });
             } else {
-                this.tableData.forEach(function (item, index) {
+                this.grid.getData().forEach(function (item, index) {
                     if (item.FInvNumber == code) {
                         var row = vm.grid.getRowFromPosition(index, true);
                         if (row) {
@@ -376,14 +375,18 @@
 
                         that.loading = false;
                         if (result.status == "success") {
-                            var index = that.tableData.findIndex(function (row) {
+                            var index = that.grid.getData().findIndex(function (row) {
                                 return row.FEntryID == id
                             });
-                            that.tableData[index]["pubuserdefnvc7"] = val == '是' ? '否' : '是';
-                            return that.$message({
-                                message: result.msg,
-                                type: 'success'
-                            });
+                            if (index > -1) {
+                                var row = that.grid.getRowFromPosition(index, true);
+                                row.getCell('pubuserdefnvc7').setValue(val == '是' ? '否' : '是');
+                                return that.$message({
+                                    message: result.msg,
+                                    type: 'success'
+                                });
+                            }
+
                         } else {
                             return that.$message({
                                 message: result.msg,
@@ -428,15 +431,15 @@
                     var selectedRow = that.grid.getSelectedData();
                     if (selectedRow && selectedRow.length > 0) {
                         selectedRow.forEach(function (sr) {
-                            var index = that.tableData.findIndex(function (row) {
+                            var index = that.grid.getData().findIndex(function (row) {
                                 return row.FEntryID == sr.FEntryID
                             })
                             if (index > -1) {
                                 var row = that.grid.getRowFromPosition(index, true);
-                                //row.getCell('FVenderName').setValue(that.currentRow.name);
-                                //row.getCell('FVenderCode').setValue(that.currentRow.code);
-                                that.tableData[index]["FVenderName"] = that.currentRow.name;
-                                that.tableData[index]["FVenderCode"] = that.currentRow.code
+                                row.getCell('FVenderName').setValue(that.currentRow.name);
+                                row.getCell('FVenderCode').setValue(that.currentRow.code);
+                                //that.tableData[index]["FVenderName"] = that.currentRow.name;
+                                //that.tableData[index]["FVenderCode"] = that.currentRow.code
                             }
                         })
                     }
@@ -483,7 +486,7 @@
         },
     },
     watch: {
-        tableData: {
+        tableData1: {
             handler: function (newData, oldData) {
                 this.grid.replaceData(newData);
             },
@@ -507,9 +510,9 @@
             columnHeaderVertAlign: "bottom",
             selectable: 9999, //make rows selectable
             selectableRollingSelection: false,
-            data: this.tableData, //set initial table data
+            //data: this.tableData, //set initial table data
             columns: tableconf_cgdd.concat(that.actionColumn),
-            rowContextMenu: this.rowMenu,
+            //rowContextMenu: this.rowMenu,
             cellClick: function (e, cell) {
                 var columnName = cell.getField();
                 if (columnName == "pubuserdefnvc7") {

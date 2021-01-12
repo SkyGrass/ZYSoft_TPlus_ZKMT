@@ -31,8 +31,6 @@
             },
             loading: false,
             grid: {},
-            tableData: [],
-            tableCopy: [],
             form: {
                 ordercode: '',
                 voucherdate: [moment().startOf('month').format("YYYY-MM-DD"), moment().format("YYYY-MM-DD")],
@@ -42,9 +40,6 @@
         }
     },
     methods: {
-        clearTable() {
-            this.tableData = [];
-        },
         queryRecord() {
             this.getList()
         },
@@ -68,10 +63,9 @@
                     }),
                 dataType: "json",
                 success: function (result) {
-                    that.tableData = [];
+                    that.grid.clearData();
                     if (result.status == "success") {
-                        that.tableData = result.data;
-                        that.tableCopy = result.data;
+                        that.grid.replaceData(result.data);
                     } else {
                         return that.$message({
                             message: '未能查询到采购订单信息!',
@@ -81,7 +75,7 @@
                     that.maxlength = result.data.length;
                 },
                 error: function () {
-                    that.tableData = [];
+                    that.grid.clearData();
                 }
             });
         },
@@ -171,7 +165,7 @@
         }
     },
     watch: {
-        tableData: {
+        tableData1: {
             handler: function (newData) {
                 this.grid.replaceData(newData);
             },
@@ -188,7 +182,7 @@
         this.grid = new Tabulator("#grid", {
             height: that.maxHeight,
             columnHeaderVertAlign: "bottom",
-            data: this.tableData, //set initial table data
+            //data: this.tableData, //set initial table data
             columns: tableconf_cgd,
             selectable: 9999, //make rows selectable
             selectableRollingSelection: false,
