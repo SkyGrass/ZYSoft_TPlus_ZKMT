@@ -185,6 +185,7 @@
             var that = this;
             var result = false;
             var array = this.grid.getSelectedData();
+
             if (this.form.FProjectCode == "") {
                 result = true;
                 this.$message({
@@ -207,15 +208,52 @@
                 });
             }
 
-            if (array.some(function (f) { return f.FUnOutQty > f.FStockQty })) {
+            //if (array.some(function (f) { return f.FUnOutQty > f.FStockQty })) {
+            //    result = true;
+            //    this.$message({
+            //        message: '发现超库存出库,请核实!',
+            //        type: 'warning'
+            //    });
+            //}
+
+            //按存货编码汇总数据 
+            var arr = [];
+            array.forEach(function (row) {
+                var item = arr.find(function (f) {
+                    return f.FInvNumber == row.FInvNumber;
+                })
+                if (item == void 0) {
+                    item = {};
+                    item.FInvNumber = row.FInvNumber;
+
+                    arr.push(item)
+                }
+                item.FStockQty = row.FStockQty;
+                item.FUnOutQty = Number(item.FUnOutQty || '0') + Number(row.FUnOutQty);
+
+            });
+
+            if (arr.some(function (f) { return f.FUnOutQty > f.FStockQty })) {
                 result = true;
                 this.$message({
-                    message: '发现超库存出库,请核实!',
+                    message: '发现汇总超库存出库,请核实!',
                     type: 'warning'
                 });
             }
 
             return result;
+        },
+        groupBy(array, f) {
+            var _that = this;
+            _that.groupArr = [];
+            const groups = {};
+            array.forEach(function (o) {
+                const group = JSON.stringify(f(o));
+                _that.groupArr.push(group);
+                groups[group] = groups[group] || [];
+                groups[group].push(o);
+            });
+            return groups;
         },
         saveTable() {
             var that = this;
