@@ -458,7 +458,9 @@ public class ZKMTHandler : IHttpHandler
 
             string sql = string.Format(@"select t2.idproject, t1.id FID,T2.id FEntryID,t1.code FBillNo,t1.voucherdate FDate,T3.code FInvNumber,t3.name FInvName,t3.specification FInvStd,T4.name FUnit,       
                     CONVERT(FLOAT,t2.quantity) FQty,CONVERT(FLOAT,ISNULL(T2.pubuserdefdecm1,0)) FOutQty,CONVERT(FLOAT,t2.quantity - ISNULL(T2.pubuserdefdecm1,0))  FUnOutQty,       
-                    isnull((SELECT CONVERT(FLOAT,SUM(T5.CanuseBaseQuantity)) FROM ST_CurrentStock T5 WHERE T5.idinventory=T2.idinventory and t5.idwarehouse='{1}'),0) FStockQty       
+                    isnull((SELECT CONVERT(FLOAT,SUM(T5.CanuseBaseQuantity)) FROM ST_CurrentStock T5 WHERE T5.idinventory=T2.idinventory and t5.idwarehouse='{1}'),0) FStockQty,
+                    isnull((SELECT CONVERT(FLOAT,SUM(T6.Quantity)) FROM v_ZYSoft_ProjectCurrentStock T6 
+                    WHERE T2.idproject=T6.idproject and T6.idinventory=T2.idinventory and t6.idwarehouse='2'),0) FProjectStockQty
                     from Pu_PurchaseRequisition t1 join Pu_PurchaseRequisition_b t2 on t1.id=t2.idPurchaseRequisitionDTO       
                     LEFT JOIN AA_Inventory T3 ON T2.idinventory=T3.id       
                     LEFT JOIN AA_Unit T4 ON T3.idunit=T4.ID       
@@ -468,7 +470,9 @@ public class ZKMTHandler : IHttpHandler
             {
                 sql = string.Format(@"select * from (select t2.idproject, t1.id FID,T2.id FEntryID,t1.code FBillNo,t1.voucherdate FDate,T3.code FInvNumber,t3.name FInvName,t3.specification FInvStd,T4.name FUnit,       
                     CONVERT(FLOAT,t2.quantity) FQty,CONVERT(FLOAT,ISNULL(T2.pubuserdefdecm1,0)) FOutQty,CONVERT(FLOAT,t2.quantity - ISNULL(T2.pubuserdefdecm1,0))  FUnOutQty,       
-                    isnull((SELECT CONVERT(FLOAT,SUM(T5.CanuseBaseQuantity)) FROM ST_CurrentStock T5 WHERE T5.idinventory=T2.idinventory and t5.idwarehouse='{1}'),0) FStockQty       
+                    isnull((SELECT CONVERT(FLOAT,SUM(T5.CanuseBaseQuantity)) FROM ST_CurrentStock T5 WHERE T5.idinventory=T2.idinventory and t5.idwarehouse='{1}'),0) FStockQty,
+                    isnull((SELECT CONVERT(FLOAT,SUM(T6.Quantity)) FROM v_ZYSoft_ProjectCurrentStock T6 
+                    WHERE T2.idproject=T6.idproject and T6.idinventory=T2.idinventory and t6.idwarehouse='2'),0) FProjectStockQty
                     from Pu_PurchaseRequisition t1 join Pu_PurchaseRequisition_b t2 on t1.id=t2.idPurchaseRequisitionDTO       
                     LEFT JOIN AA_Inventory T3 ON T2.idinventory=T3.id       
                     LEFT JOIN AA_Unit T4 ON T3.idunit=T4.ID       

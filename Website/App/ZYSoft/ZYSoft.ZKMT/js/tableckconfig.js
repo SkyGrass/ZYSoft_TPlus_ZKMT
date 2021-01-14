@@ -59,7 +59,15 @@
 	    hozAlign: "center",
 	    headerSort: false,
 	    width: 80
-	},
+    },
+    {
+        title: "项目结存",
+        field: "FProjectStockQty",
+        hozAlign: "right",
+        width: 120,
+        headerSortTristate: true,
+        editor: false,
+    },
 	{
 	    title: "请购数量",
 	    field: "FQty",

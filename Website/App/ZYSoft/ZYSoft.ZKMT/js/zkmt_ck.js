@@ -56,7 +56,7 @@
                 }
             });
         },
-        handleGetStock () {
+        handleGetStock() {
             var that = this;
             $.ajax({
                 type: "POST",
@@ -183,9 +183,12 @@
         },
         beforeSave() {
             var that = this;
+            that.grid.rowManager.rows.forEach(function (row) {
+                row.getElement().style.backgroundColor = "#fff";
+            });
             var result = false;
             var array = this.grid.getSelectedData();
-
+            var arrayRows = this.grid.getSelectedRows();
             if (this.form.FProjectCode == "") {
                 result = true;
                 this.$message({
@@ -208,37 +211,46 @@
                 });
             }
 
-            //if (array.some(function (f) { return f.FUnOutQty > f.FStockQty })) {
-            //    result = true;
-            //    this.$message({
-            //        message: '发现超库存出库,请核实!',
-            //        type: 'warning'
-            //    });
-            //}
-
-            //按存货编码汇总数据 
             var arr = [];
-            array.forEach(function (row) {
+            arrayRows.forEach(function (row) {
                 var item = arr.find(function (f) {
-                    return f.FInvNumber == row.FInvNumber;
+                    return f.FInvNumber == row.getCell('FInvNumber').getValue();
                 })
                 if (item == void 0) {
                     item = {};
-                    item.FInvNumber = row.FInvNumber;
-
+                    item.FInvNumber = row.getCell('FInvNumber').getValue();
+                    item.row = [];
                     arr.push(item)
                 }
-                item.FStockQty = row.FStockQty;
-                item.FUnOutQty = Number(item.FUnOutQty || '0') + Number(row.FUnOutQty);
-
+                item.FStockQty = row.getCell('FStockQty').getValue();
+                item.FUnOutQty = Number(item.FUnOutQty || '0') + Number(row.getCell('FUnOutQty').getValue());
+                item.row.push(row)
+                row.getElement().style.backgroundColor = "#fff";
             });
 
-            if (arr.some(function (f) { return f.FUnOutQty > f.FStockQty })) {
-                result = true;
-                this.$message({
-                    message: '发现汇总超库存出库,请核实!',
-                    type: 'warning'
-                });
+            if (arr.length > 0) {
+                var errCount = 0;
+                arr.forEach(function (row) {
+                    if (row.FUnOutQty > row.FStockQty) {
+                        row.row.forEach(function (r) {
+                            errCount++;
+                            r.getElement().style.backgroundColor = "#cd950c";
+                        })
+                    }
+                    if (row.FUnOutQty <= 0) {
+                        row.row.map(function (r) {
+                            errCount++;
+                            r.getElement().style.backgroundColor = "#cd950c";
+                        })
+                    }
+                })
+                result = errCount > 0;
+                if (result) {
+                    this.$message({
+                        message: '发现行数据异常,请核实!',
+                        type: 'warning'
+                    });
+                }
             }
 
             return result;
@@ -337,7 +349,6 @@
             columnHeaderVertAlign: "bottom",
             selectable: 9999, //make rows selectable
             selectableRollingSelection: false,
-            // data: this.tableData, //set initial table data
             columns: tableconf_qgd,
         })
     }
