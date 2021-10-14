@@ -109,5 +109,12 @@
 	            return (Number(FQty) - Number(FOutQty) >= FUnOutQty)
 	        }
 	    }
+	},
+	{
+		title: "备注",
+		field: "FRemark",
+		hozAlign: "center",
+		headerSort: false,
+		width: 250,
 	}
 ]
